@@ -31,14 +31,14 @@ export class AuthController {
   @Public()
   @Post('login')
   @ApiOperation({ summary: '用户登录' })
-  async login(@Body() dto: LoginDto) {
+  async login(@Body() dto: LoginDto, @Request() req: any) {
     // 👈 替换 any
     const user = await this.authService.validateUser(
       dto.username,
       dto.password,
     );
     if (!user) throw new Error('账号或密码错误');
-    return this.authService.login(user);
+    return this.authService.login(req, user);
   }
 
   @Public()
@@ -80,13 +80,13 @@ export class AuthController {
   @ApiOperation({ summary: 'Swagger文档登录接口' })
   @ApiConsumes('application/x-www-form-urlencoded')
   @UseInterceptors(FileInterceptor(''))
-  async swaggerLogin(@Body() dto: SwaggerLoginDto) {
+  async swaggerLogin(@Body() dto: SwaggerLoginDto, @Request() req: any) {
     // 👈 替换 any
     const user = await this.authService.validateUser(
       dto.username,
       dto.password,
     );
     if (!user) throw new Error('账号或密码错误');
-    return this.authService.login(user);
+    return this.authService.login(req, user);
   }
 }
