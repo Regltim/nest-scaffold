@@ -18,7 +18,7 @@ async function bootstrap() {
   app.enableCors();
 
   // 3. 全局前缀
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('');
 
   // 4. 配置静态资源 (Uploads)
   app.useStaticAssets(join(__dirname, '..', 'uploads'), {
@@ -40,7 +40,7 @@ async function bootstrap() {
         flows: {
           password: {
             // 指向我们刚才写的那个接口
-            tokenUrl: '/api/auth/swagger/login',
+            tokenUrl: '/auth/swagger/login',
             scopes: {},
           },
         },

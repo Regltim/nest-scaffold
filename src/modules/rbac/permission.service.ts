@@ -13,23 +13,18 @@ export class PermissionService extends BaseService<Permission> {
     super(permRepo);
   }
 
-  /**
-   * 获取权限树 (递归构建)
-   */
   async findTree() {
     const all = await this.permRepo.find({ order: { sort: 'ASC' } });
     return this.buildTree(all, null);
   }
 
-  /**
-   * 递归辅助函数
-   */
-  private buildTree(items: Permission[], parentId: number | null): any[] {
+  private buildTree(items: Permission[], parentId: string | null): any[] {
+    // ✅ parentId: string
     return items
-      .filter((item) => item.parentId === parentId) // 找到当前父节点下的子节点
+      .filter((item) => item.parentId === parentId)
       .map((item) => ({
         ...item,
-        children: this.buildTree(items, item.id), // 递归查找子节点
+        children: this.buildTree(items, item.id),
       }));
   }
 }

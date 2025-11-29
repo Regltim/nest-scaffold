@@ -16,14 +16,16 @@ export class RoleService extends BaseService<Role> {
     super(roleRepo);
   }
 
-  async assignPermissions(roleId: number, permIds: number[]) {
+  async assignPermissions(roleId: string, permIds: string[]) {
+    // ✅ string ID
     const role = await this.roleRepo.findOne({ where: { id: roleId } });
     if (!role) throw new Error('角色不存在');
     role.permissions = await this.permRepo.find({ where: { id: In(permIds) } });
     return this.roleRepo.save(role);
   }
 
-  async getRolePermissions(roleId: number) {
+  async getRolePermissions(roleId: string) {
+    // ✅ string ID
     const role = await this.roleRepo.findOne({
       where: { id: roleId },
       relations: ['permissions'],
@@ -31,13 +33,12 @@ export class RoleService extends BaseService<Role> {
     return role ? role.permissions.map((p) => p.id) : [];
   }
 
-  // ✅ 新增：分配数据权限
-  async assignDataScope(roleId: number, dataScope: string, deptIds: number[]) {
+  async assignDataScope(roleId: string, dataScope: string, deptIds: string[]) {
+    // ✅ string ID
     const role = await this.roleRepo.findOne({ where: { id: roleId } });
     if (!role) throw new Error('角色不存在');
 
     role.dataScope = dataScope;
-    // 如果是“自定义”，则关联部门；否则清空
     if (dataScope === '2' && deptIds && deptIds.length > 0) {
       role.depts = await this.deptRepo.findBy({ id: In(deptIds) });
     } else {

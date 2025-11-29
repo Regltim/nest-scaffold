@@ -22,7 +22,8 @@ import {
   ResetPasswordDto,
   SwaggerLoginDto,
 } from './auth.dto';
-import { AppRequest } from '../../common/interfaces/app-request.interface'; // 👈 引入
+import { AppRequest } from '../../common/interfaces/app-request.interface';
+import { Keep } from '../../common/decorators/keep.decorator'; // 👈 引入
 
 @ApiTags('认证模块')
 @Controller('auth')
@@ -52,7 +53,6 @@ export class AuthController {
   @Get('profile')
   @ApiBearerAuth()
   @ApiOperation({ summary: '获取当前用户信息' })
-  // ✅ 使用 AppRequest，可以直接点出 req.user.userId
   async getProfile(@Request() req: AppRequest) {
     return this.authService.getProfile(req.user.userId);
   }
@@ -77,6 +77,7 @@ export class AuthController {
 
   @Public()
   @Post('swagger/login')
+  @Keep()
   @ApiOperation({ summary: 'Swagger文档登录接口' })
   @ApiConsumes('application/x-www-form-urlencoded')
   @UseInterceptors(FileInterceptor(''))

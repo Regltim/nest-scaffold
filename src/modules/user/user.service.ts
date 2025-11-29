@@ -11,17 +11,12 @@ export class UserService extends BaseService<User> implements OnModuleInit {
   private readonly logger = new Logger(UserService.name);
 
   constructor(
-    @InjectRepository(User)
-    private readonly userRepo: Repository<User>,
-    @InjectRepository(Role)
-    private readonly roleRepo: Repository<Role>,
+    @InjectRepository(User) private readonly userRepo: Repository<User>,
+    @InjectRepository(Role) private readonly roleRepo: Repository<Role>,
   ) {
     super(userRepo);
   }
 
-  /**
-   * 系统启动初始化
-   */
   async onModuleInit() {
     await this.initAdmin();
   }
@@ -30,7 +25,11 @@ export class UserService extends BaseService<User> implements OnModuleInit {
     let adminRole = await this.roleRepo.findOne({ where: { code: 'admin' } });
     if (!adminRole) {
       this.logger.log('初始化: 创建 admin 角色...');
-      adminRole = this.roleRepo.create({ name: '超级管理员', code: 'admin' });
+      adminRole = this.roleRepo.create({
+        name: '超级管理员',
+        code: 'admin',
+        dataScope: '1',
+      });
       await this.roleRepo.save(adminRole);
     }
 
@@ -51,9 +50,6 @@ export class UserService extends BaseService<User> implements OnModuleInit {
     }
   }
 
-  /**
-   * 使用 QueryBuilder 查询带密码的用户信息 (用于登录)
-   */
   async findByUsername(username: string): Promise<User | undefined> {
     return this.userRepo
       .createQueryBuilder('user')
@@ -63,15 +59,11 @@ export class UserService extends BaseService<User> implements OnModuleInit {
       .getOne();
   }
 
-  /**
-   * 获取用户完整画像 (角色+权限)
-   */
-  async findProfile(userId: number) {
+  async findProfile(userId: string) {
     const user = await this.userRepo.findOne({
       where: { id: userId },
       relations: ['roles', 'roles.permissions'],
     });
-
     if (!user) throw new Error('用户不存在');
 
     const roleCodes = user.roles.map((r) => r.code);
@@ -79,7 +71,6 @@ export class UserService extends BaseService<User> implements OnModuleInit {
       const perms = role.permissions ? role.permissions.map((p) => p.code) : [];
       return [...acc, ...perms];
     }, [] as string[]);
-
     return {
       ...user,
       roles: roleCodes,
@@ -87,27 +78,18 @@ export class UserService extends BaseService<User> implements OnModuleInit {
     };
   }
 
-  /**
-   * 给用户分配角色
-   */
-  async setRoles(userId: number, roleIds: number[]) {
+  async setRoles(userId: string, roleIds: string[]) {
     const user = await this.findOne(userId);
     if (!user) throw new Error('用户不存在');
-
     user.roles = await this.roleRepo.find({ where: { id: In(roleIds) } });
-
     return this.userRepo.save(user);
   }
 
-  /**
-   * ✅ 关键方法：暴露 Repository 给外部 (如 AuthService) 使用
-   */
   public repo(): Repository<User> {
     return this.userRepo;
   }
 
-  // 为数据权限拦截器提供查询 (需要查 Role.depts)
-  async findUserWithRolesAndDepts(userId: number) {
+  async findUserWithRolesAndDepts(userId: string) {
     return this.userRepo.findOne({
       where: { id: userId },
       relations: ['roles', 'roles.depts', 'dept'],

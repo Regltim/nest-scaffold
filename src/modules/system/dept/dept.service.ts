@@ -13,9 +13,6 @@ export class DeptService extends BaseService<Dept> {
     super(deptRepo);
   }
 
-  /**
-   * 获取部门树
-   */
   async findTree() {
     const all = await this.deptRepo.find({
       order: { sort: 'ASC', createdAt: 'DESC' },
@@ -23,19 +20,14 @@ export class DeptService extends BaseService<Dept> {
     return this.buildTree(all, null);
   }
 
-  /**
-   * 删除前校验
-   */
-  async remove(id: number): Promise<void> {
+  async remove(id: string): Promise<void> {
     const childCount = await this.deptRepo.count({ where: { parentId: id } });
     if (childCount > 0) throw new BadRequestException('存在子部门，不允许删除');
-
-    // 检查是否有关联用户 (需要加载关系或在 UserRepo 查)
-    // 这里简化，直接删
     await super.remove(id);
   }
 
-  private buildTree(items: Dept[], parentId: number | null): any[] {
+  private buildTree(items: Dept[], parentId: string | null): any[] {
+    // ✅ parentId: string
     return items
       .filter((item) => item.parentId === parentId)
       .map((item) => ({

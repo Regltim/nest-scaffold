@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { Reflector } from '@nestjs/core';
+import { KEEP_KEY } from '../decorators/keep.decorator';
 
 export interface Response<T> {
   code: number;
@@ -17,17 +19,32 @@ export interface Response<T> {
 @Injectable()
 export class TransformInterceptor<T> implements NestInterceptor<
   T,
-  Response<T>
+  Response<T> | T
 > {
+  // 注入 Reflector 用于读取装饰器元数据
+  constructor(private readonly reflector: Reflector) {}
+
   intercept(
     context: ExecutionContext,
     next: CallHandler,
-  ): Observable<Response<T>> {
+  ): Observable<Response<T> | T> {
+    // 1. 检查是否加了 @Keep() 装饰器
+    const keep = this.reflector.getAllAndOverride<boolean>(KEEP_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    // 2. 如果加了 @Keep，直接返回原始数据
+    if (keep) {
+      return next.handle();
+    }
+
+    // 3. 否则进行统一包装
     return next.handle().pipe(
       map((data) => ({
         code: 200,
         message: 'success',
-        data: data || null, // 确保 data 不为 undefined
+        data: data || null,
         timestamp: new Date().toISOString(),
       })),
     );

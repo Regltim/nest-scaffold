@@ -17,7 +17,7 @@ export class User extends BaseEntity {
   username: string;
 
   @Column({ comment: '密码', select: false })
-  @Exclude() // 返回前端时隐藏密码
+  @Exclude()
   password: string;
 
   @Column({ comment: '昵称', nullable: true })
@@ -32,7 +32,6 @@ export class User extends BaseEntity {
   @Column({ default: true, comment: '状态: 1启用 0禁用' })
   isActive: boolean;
 
-  // 多对多关联角色
   @ManyToMany(() => Role)
   @JoinTable({ name: 'sys_user_roles' })
   roles: Role[];
@@ -42,5 +41,5 @@ export class User extends BaseEntity {
   dept: Dept;
 
   @Column({ name: 'dept_id', nullable: true })
-  deptId: number;
+  deptId: string;
 }

@@ -10,7 +10,7 @@ import * as bcrypt from 'bcryptjs';
 import { Redis } from 'ioredis';
 import { ConfigService } from '@nestjs/config';
 import { LoginLogService } from '../system/log/login-log.service';
-import { AppRequest } from '../../common/interfaces/app-request.interface'; // 👈 引入
+import { AppRequest } from '../../common/interfaces/app-request.interface';
 
 @Injectable()
 export class AuthService {
@@ -34,11 +34,7 @@ export class AuthService {
     return null;
   }
 
-  /**
-   * 登录
-   */
   async login(req: AppRequest, user: any) {
-    // 👈 指定 req 类型
     if (!user) {
       this.loginLogService.create(
         req,
@@ -50,6 +46,7 @@ export class AuthService {
     }
 
     this.loginLogService.create(req, user.username, 1, '登录成功');
+
     const payload = {
       username: user.username,
       sub: user.id,
@@ -57,7 +54,6 @@ export class AuthService {
 
     const expiresIn = 604800;
     const token = this.jwtService.sign(payload);
-
     await this.redis.set(
       `online_token:${token}`,
       JSON.stringify({
@@ -69,11 +65,7 @@ export class AuthService {
       'EX',
       expiresIn,
     );
-    return {
-      access_token: token,
-      token_type: 'Bearer',
-      expires_in: expiresIn,
-    };
+    return { access_token: token, token_type: 'Bearer', expires_in: expiresIn };
   }
 
   async register(createUserDto: any) {
@@ -87,7 +79,7 @@ export class AuthService {
     });
   }
 
-  async getProfile(userId: number) {
+  async getProfile(userId: string) {
     return this.userService.findProfile(userId);
   }
 
@@ -97,13 +89,12 @@ export class AuthService {
     return { msg: '退出成功' };
   }
 
-  async changePassword(userId: number, oldPass: string, newPass: string) {
+  async changePassword(userId: string, oldPass: string, newPass: string) {
+    // ✅ userId: string
     const user = await this.userService.findOne(userId);
     const userWithPass = await this.userService.findByUsername(user.username);
-
     const isMatch = await bcrypt.compare(oldPass, userWithPass.password);
     if (!isMatch) throw new BadRequestException('旧密码错误');
-
     const hashedPassword = await bcrypt.hash(newPass, 10);
     await this.userService.update(userId, { password: hashedPassword });
     return { msg: '密码修改成功' };
@@ -111,13 +102,10 @@ export class AuthService {
 
   async resetPassword(email: string, code: string, newPass: string) {
     const cacheCode = await this.redis.get(`captcha:email:${email}`);
-    if (!cacheCode || cacheCode !== code) {
+    if (!cacheCode || cacheCode !== code)
       throw new BadRequestException('验证码错误或已过期');
-    }
-
     const user = await this.userService.repo().findOne({ where: { email } });
     if (!user) throw new BadRequestException('该邮箱未绑定账号');
-
     const hashedPassword = await bcrypt.hash(newPass, 10);
     await this.userService.update(user.id, { password: hashedPassword });
     await this.redis.del(`captcha:email:${email}`);

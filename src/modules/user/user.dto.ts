@@ -7,68 +7,58 @@ import {
 import {
   IsArray,
   IsEmail,
-  IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
 } from 'class-validator';
 
-// 分页查询 DTO
 export class UserPageDto extends BasePageDto {
   @ApiProperty({ description: '用户名(模糊搜索)', required: false })
-  @QueryType(QueryAction.LIKE) // 自动生成 where username LIKE %val%
+  @QueryType(QueryAction.LIKE)
   username?: string;
 
   @ApiProperty({ description: '邮箱(模糊搜索)', required: false })
-  @QueryType(QueryAction.LIKE) // 自动生成 where email LIKE %val%
+  @QueryType(QueryAction.LIKE)
   email?: string;
 
   @ApiProperty({ description: '状态(精确匹配)', required: false })
-  @QueryType(QueryAction.EQUAL) // 自动生成 where isActive = val
+  @QueryType(QueryAction.EQUAL)
   isActive?: boolean;
 }
 
 export class CreateUserDto {
-  /** 用户名 */
   @IsString()
   @IsNotEmpty()
   username: string;
 
-  /** 密码 */
   @IsString()
   @IsNotEmpty()
   password: string;
 
-  /** 昵称 */
   @IsString()
   @IsOptional()
   nickname?: string;
 
-  /** 邮箱 */
   @IsEmail()
   @IsOptional()
   email?: string;
 }
 
 export class ChangePasswordDto {
-  /** 用户ID */
-  @IsInt()
-  userId: number;
+  @IsString() // ✅ 修改：UserId 是 string
+  userId: string;
 
-  /** 旧密码 */
   @IsString()
   @IsNotEmpty()
   oldPass: string;
 
-  /** 新密码 */
   @IsString()
   @IsNotEmpty()
   newPass: string;
 }
 
 export class AssignRolesDto {
-  /** 角色ID数组 */
   @IsArray()
-  @IsInt({ each: true }) // 检查数组中每个元素都是整数
-  roleIds: number[];
+  @IsString({ each: true }) // ✅ 修改：RoleIds 是 string 数组
+  roleIds: string[];
 }

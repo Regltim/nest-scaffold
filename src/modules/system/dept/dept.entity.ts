@@ -8,7 +8,7 @@ export class Dept extends BaseEntity {
   name: string;
 
   @Column({ comment: '父级ID', nullable: true })
-  parentId: number;
+  parentId: string; // ✅ 修改：UUID 是字符串
 
   @Column({ comment: '显示顺序', default: 0 })
   sort: number;
@@ -19,7 +19,6 @@ export class Dept extends BaseEntity {
   @Column({ comment: '状态 (1正常 0停用)', default: true })
   status: boolean;
 
-  // 关联用户 (一对多)
   @OneToMany(() => User, (user) => user.dept)
   users: User[];
 }

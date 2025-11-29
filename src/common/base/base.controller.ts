@@ -2,7 +2,7 @@ import { Body, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { BaseService } from './base.service';
 import { BaseEntity } from './base.entity';
 import { ApiOperation } from '@nestjs/swagger';
-import { BasePageDto } from '../dto/base-page.dto'; // 👈 引用这个唯一标准
+import { BasePageDto } from '../dto/base-page.dto';
 
 export abstract class BaseController<T extends BaseEntity> {
   constructor(protected readonly service: BaseService<T>) {}
@@ -15,19 +15,18 @@ export abstract class BaseController<T extends BaseEntity> {
 
   @Delete(':id')
   @ApiOperation({ summary: '删除' })
-  async remove(@Param('id') id: number) {
+  async remove(@Param('id') id: string) {
+    // ✅ 修改类型为 string
     return this.service.remove(id);
   }
 
   @Put(':id')
   @ApiOperation({ summary: '更新' })
-  async update(@Param('id') id: number, @Body() dto: any) {
+  async update(@Param('id') id: string, @Body() dto: any) {
+    // ✅ 修改类型为 string
     return this.service.update(id, dto);
   }
 
-  /**
-   * ✅ 基础分页接口 (如果不重写，默认使用此逻辑)
-   */
   @Get('page')
   @ApiOperation({ summary: '分页查询' })
   async page(@Query() query: BasePageDto) {
@@ -42,7 +41,8 @@ export abstract class BaseController<T extends BaseEntity> {
 
   @Get(':id')
   @ApiOperation({ summary: '查询详情' })
-  async findOne(@Param('id') id: number) {
+  async findOne(@Param('id') id: string) {
+    // ✅ 修改类型为 string
     return this.service.findOne(id);
   }
 }

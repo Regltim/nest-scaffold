@@ -3,29 +3,39 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TerminusModule } from '@nestjs/terminus';
 import { HttpModule } from '@nestjs/axios';
 import { DiscoveryModule } from '@nestjs/core';
+
+// Entity
 import { DictType } from './dict/dict-type.entity';
 import { DictData } from './dict/dict-data.entity';
 import { OperLog } from './log/oper-log.entity';
+import { LoginLog } from './log/login-log.entity';
 import { Permission } from '../rbac/permission.entity';
 import { Role } from '../rbac/role.entity';
-import { DictController } from './dict/dict.controller';
+import { Dept } from './dept/dept.entity';
+
+// Controller
 import { MonitorController } from './monitor/monitor.controller';
+import { OnlineController } from './monitor/online.controller';
 import { SyncController } from './sync/sync.controller';
+import { DeptController } from './dept/dept.controller';
+// 👇 替换旧的 DictController
+import { DictTypeController } from './dict/dict-type.controller';
+import { DictDataController } from './dict/dict-data.controller';
+
+// Service
 import { DictService } from './dict/dict.service';
 import { TaskService } from './task/task.service';
 import { SyncService } from './sync/sync.service';
-import { OnlineController } from './monitor/online.controller';
+import { LoginLogService } from './log/login-log.service';
 import { DeptService } from './dept/dept.service';
-import { DeptController } from './dept/dept.controller';
-import { Dept } from './dept/dept.entity';
 
 @Module({
   imports: [
-    // 确保引入了 Permission 和 Role，因为 SyncService 要操作它们
     TypeOrmModule.forFeature([
       DictType,
       DictData,
       OperLog,
+      LoginLog,
       Permission,
       Role,
       Dept,
@@ -35,13 +45,20 @@ import { Dept } from './dept/dept.entity';
     DiscoveryModule,
   ],
   controllers: [
-    DictController,
+    DictTypeController,
+    DictDataController,
     MonitorController,
-    SyncController,
     OnlineController,
+    SyncController,
     DeptController,
   ],
-  providers: [DictService, TaskService, SyncService, DeptService],
-  exports: [DictService],
+  providers: [
+    DictService,
+    TaskService,
+    SyncService,
+    LoginLogService,
+    DeptService,
+  ],
+  exports: [DictService, DeptService],
 })
 export class SystemModule {}

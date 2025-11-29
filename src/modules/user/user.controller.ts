@@ -24,7 +24,7 @@ import {
   ChangePasswordDto,
   CreateUserDto,
   UserPageDto,
-} from './user.dto'; // 👈 引入新DTO
+} from './user.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { BusinessType, Log } from '../../common/decorators/log.decorator';
@@ -49,7 +49,6 @@ export class UserController extends BaseController<User> {
   @Log('新增用户', BusinessType.INSERT)
   @ApiOperation({ summary: '新增用户' })
   async create(@Body() dto: CreateUserDto) {
-    // 👈 替换 any
     return super.create(dto);
   }
 
@@ -69,8 +68,8 @@ export class UserController extends BaseController<User> {
   @Roles('admin')
   @Log('分配角色', BusinessType.GRANT)
   @ApiOperation({ summary: '给用户分配角色' })
-  async setRoles(@Param('id') id: number, @Body() dto: AssignRolesDto) {
-    // 👈 替换 any
+  async setRoles(@Param('id') id: string, @Body() dto: AssignRolesDto) {
+    // ✅ id: string
     return this.userService.setRoles(id, dto.roleIds);
   }
 
@@ -81,7 +80,7 @@ export class UserController extends BaseController<User> {
   async export(@Res() res: Response) {
     const users = await this.userService.list();
     const columns = [
-      { header: 'ID', key: 'id', width: 10 },
+      { header: 'ID', key: 'id', width: 30 },
       { header: '用户名', key: 'username', width: 20 },
       { header: '昵称', key: 'nickname', width: 20 },
       { header: '邮箱', key: 'email', width: 25 },
@@ -95,7 +94,6 @@ export class UserController extends BaseController<User> {
   @Log('修改密码', BusinessType.UPDATE)
   @ApiOperation({ summary: '修改密码' })
   async changePassword(@Body() dto: ChangePasswordDto) {
-    // 👈 替换 any
     return this.authService.changePassword(
       dto.userId,
       dto.oldPass,

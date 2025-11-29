@@ -12,9 +12,10 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { BaseController } from '../../../common/base/base.controller';
 import { Dept } from './dept.entity';
 import { DeptService } from './dept.service';
+import { CreateDeptDto } from './dept.dto';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { RolesGuard } from '../../../common/guards/roles.guard';
-import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager'; // 👈 引入缓存
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 
 @ApiTags('部门管理')
 @ApiBearerAuth()
@@ -28,14 +29,13 @@ export class DeptController extends BaseController<Dept> {
   @Post()
   @Roles('admin')
   @ApiOperation({ summary: '新增部门' })
-  async create(@Body() dto: any) {
+  async create(@Body() dto: CreateDeptDto) {
     return super.create(dto);
   }
 
   @Get('tree')
-  // @Roles('admin') // 通常部门树是公共的，用于下拉框，可以不加 admin 限制
-  @UseInterceptors(CacheInterceptor) // ✅ 开启缓存
-  @CacheTTL(60000) // 缓存 60秒
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(60000)
   @ApiOperation({ summary: '获取部门树(带缓存)' })
   async getTree() {
     return this.deptService.findTree();
@@ -44,7 +44,8 @@ export class DeptController extends BaseController<Dept> {
   @Delete(':id')
   @Roles('admin')
   @ApiOperation({ summary: '删除部门' })
-  async remove(@Param('id') id: number) {
+  async remove(@Param('id') id: string) {
+    // ✅ id: string
     return this.deptService.remove(id);
   }
 }
