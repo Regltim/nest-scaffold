@@ -21,7 +21,8 @@ import {
   RegisterDto,
   ResetPasswordDto,
   SwaggerLoginDto,
-} from './auth.dto'; // 👈 引入 DTO
+} from './auth.dto';
+import { AppRequest } from '../../common/interfaces/app-request.interface'; // 👈 引入
 
 @ApiTags('认证模块')
 @Controller('auth')
@@ -31,8 +32,8 @@ export class AuthController {
   @Public()
   @Post('login')
   @ApiOperation({ summary: '用户登录' })
-  async login(@Body() dto: LoginDto, @Request() req: any) {
-    // 👈 替换 any
+  // ✅ 使用 AppRequest
+  async login(@Body() dto: LoginDto, @Request() req: AppRequest) {
     const user = await this.authService.validateUser(
       dto.username,
       dto.password,
@@ -45,14 +46,14 @@ export class AuthController {
   @Post('register')
   @ApiOperation({ summary: '用户注册' })
   async register(@Body() dto: RegisterDto) {
-    // 👈 替换 any
     return this.authService.register(dto);
   }
 
   @Get('profile')
   @ApiBearerAuth()
   @ApiOperation({ summary: '获取当前用户信息' })
-  async getProfile(@Request() req) {
+  // ✅ 使用 AppRequest，可以直接点出 req.user.userId
+  async getProfile(@Request() req: AppRequest) {
     return this.authService.getProfile(req.user.userId);
   }
 
@@ -71,7 +72,6 @@ export class AuthController {
   @Post('reset-password')
   @ApiOperation({ summary: '邮箱验证码重置密码' })
   async resetPassword(@Body() dto: ResetPasswordDto) {
-    // 👈 替换 any
     return this.authService.resetPassword(dto.email, dto.code, dto.newPass);
   }
 
@@ -80,8 +80,8 @@ export class AuthController {
   @ApiOperation({ summary: 'Swagger文档登录接口' })
   @ApiConsumes('application/x-www-form-urlencoded')
   @UseInterceptors(FileInterceptor(''))
-  async swaggerLogin(@Body() dto: SwaggerLoginDto, @Request() req: any) {
-    // 👈 替换 any
+  // ✅ 使用 AppRequest
+  async swaggerLogin(@Body() dto: SwaggerLoginDto, @Request() req: AppRequest) {
     const user = await this.authService.validateUser(
       dto.username,
       dto.password,

@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LoginLog } from './login-log.entity';
-// ✅ 修正 1: 使用具体的导入，或者默认导入
 import { UAParser } from 'ua-parser-js';
+import { AppRequest } from '../../../common/interfaces/app-request.interface'; // 👈 引入
 
 @Injectable()
 export class LoginLogService {
@@ -15,11 +15,15 @@ export class LoginLogService {
   /**
    * 记录登录日志
    */
-  async create(req: any, username: string, status: number, message: string) {
-    // 获取 User-Agent 字符串
+  async create(
+    req: AppRequest,
+    username: string,
+    status: number,
+    message: string,
+  ) {
+    // 👈 指定类型
+    // 现在 req.headers 和 req.ip 都有了类型提示
     const userAgent = req.headers['user-agent'];
-
-    // ✅ 修正 2: 使用 new 关键字实例化，并调用 getResult()
     const parser = new UAParser(userAgent);
     const ua = parser.getResult();
 

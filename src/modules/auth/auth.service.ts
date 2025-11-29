@@ -10,6 +10,7 @@ import * as bcrypt from 'bcryptjs';
 import { Redis } from 'ioredis';
 import { ConfigService } from '@nestjs/config';
 import { LoginLogService } from '../system/log/login-log.service';
+import { AppRequest } from '../../common/interfaces/app-request.interface'; // 👈 引入
 
 @Injectable()
 export class AuthService {
@@ -34,29 +35,29 @@ export class AuthService {
   }
 
   /**
-   * ✅ 升级：返回标准 OAuth2 响应结构
+   * 登录
    */
-  async login(req: any, user: any) {
+  async login(req: AppRequest, user: any) {
+    // 👈 指定 req 类型
     if (!user) {
-      // ❌ 记录登录失败日志
-      this.loginLogService.create(req, user.username, 0, '账号或密码错误');
+      this.loginLogService.create(
+        req,
+        user?.username || '未知',
+        0,
+        '账号或密码错误',
+      );
       throw new Error('账号或密码错误');
     }
 
-    // ✅ 记录登录成功日志
     this.loginLogService.create(req, user.username, 1, '登录成功');
     const payload = {
       username: user.username,
       sub: user.id,
-      // 可以在这里把角色放进 Token，这样 Guard 校验时不用查库 (可选)
-      // roles: user.roles?.map(r => r.code) || []
     };
 
-    // 假设过期时间是 7 天 (秒数)
     const expiresIn = 604800;
     const token = this.jwtService.sign(payload);
-    // 💡 额外功能：记录在线用户 (存入 Redis)
-    // Key格式: online_token:${token} -> Value: { username, ip, time }
+
     await this.redis.set(
       `online_token:${token}`,
       JSON.stringify({
@@ -70,8 +71,8 @@ export class AuthService {
     );
     return {
       access_token: token,
-      token_type: 'Bearer', // 👈 标准字段
-      expires_in: expiresIn, // 👈 标准字段 (秒)
+      token_type: 'Bearer',
+      expires_in: expiresIn,
     };
   }
 
@@ -91,9 +92,7 @@ export class AuthService {
   }
 
   async logout(token: string) {
-    // 设置 Token 黑名单，时间与有效期一致
     await this.redis.set(`blacklist:${token}`, 'true', 'EX', 604800);
-    // 2. 移除在线状态
     await this.redis.del(`online_token:${token}`);
     return { msg: '退出成功' };
   }

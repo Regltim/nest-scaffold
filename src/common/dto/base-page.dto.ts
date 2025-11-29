@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsIn, IsInt, IsOptional, IsString } from 'class-validator';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
+import { Allow, IsIn, IsInt, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class BasePageDto {
@@ -53,4 +53,9 @@ export class BasePageDto {
   @IsOptional()
   @IsIn(['ASC', 'DESC', 'asc', 'desc'])
   sortOrder?: 'ASC' | 'DESC' = 'DESC';
+
+  // 允许 dataScopeSql 通过验证，但在文档中隐藏
+  @ApiHideProperty()
+  @Allow() // 允许该字段通过 whitelist 检查
+  dataScopeSql?: string;
 }
