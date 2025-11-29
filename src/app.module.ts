@@ -24,6 +24,7 @@ import { LoginLogService } from './modules/system/log/login-log.service';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { CacheModule } from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-redis-store';
+import { GenModule } from './modules/gen/gen.module';
 
 @Module({
   imports: [
@@ -80,6 +81,7 @@ import * as redisStore from 'cache-manager-redis-store';
     WhitelistModule,
     SystemModule,
     TypeOrmModule.forFeature([LoginLog]),
+    GenModule,
   ],
   controllers: [],
   providers: [
