@@ -1,13 +1,12 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { WinstonModule } from 'nest-winston';
 import { winstonConfig } from './common/logger/winston.config';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { ValidationPipe } from '@nestjs/common';
+import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { knife4jSetup } from 'nestjs-knife4j';
-import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 
 async function bootstrap() {
   // 1. 创建应用 (指定 NestExpressApplication 以支持静态资源)
@@ -73,8 +72,7 @@ async function bootstrap() {
     ],
   });
 
-  // 👇 7. 注册全局响应拦截器 (修复空文件问题的关键)
-  app.useGlobalInterceptors(new TransformInterceptor());
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
   await app.listen(3000);
   console.log(`Application is running on: ${await app.getUrl()}`);

@@ -21,12 +21,31 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { LoginLog } from './modules/system/log/login-log.entity';
 import { LoginLogService } from './modules/system/log/login-log.service';
+import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { CacheModule } from '@nestjs/cache-manager';
+import * as redisStore from 'cache-manager-redis-store';
 
 @Module({
   imports: [
     // 1. 基础配置
     ConfigModule.forRoot({ isGlobal: true, envFilePath: ['.env'] }),
     ScheduleModule.forRoot(),
+
+    // 注册缓存 (全局可用)
+    CacheModule.registerAsync({
+      isGlobal: true,
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (config: ConfigService) => ({
+        // 指定使用 redisStore
+        store: redisStore as any,
+        host: config.get('REDIS_HOST'),
+        port: config.get('REDIS_PORT'),
+        // auth_pass: config.get('REDIS_PASSWORD'), // 如果有密码
+        ttl: 60 * 1000, // 默认缓存有效期 (单位: 秒，不同版本单位可能不同，建议测试)
+        max: 1000,
+      }),
+    }),
 
     // 2. 数据库
     TypeOrmModule.forRootAsync({
@@ -68,6 +87,7 @@ import { LoginLogService } from './modules/system/log/login-log.service';
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
     { provide: APP_INTERCEPTOR, useClass: OperLogInterceptor },
+    { provide: APP_INTERCEPTOR, useClass: TransformInterceptor },
     LoginLogService,
   ],
 })

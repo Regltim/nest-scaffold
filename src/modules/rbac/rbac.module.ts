@@ -6,9 +6,10 @@ import { RoleController } from './role.controller';
 import { RoleService } from './role.service';
 import { PermissionController } from './permission.controller';
 import { PermissionService } from './permission.service';
+import { Dept } from '../system/dept/dept.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Role, Permission])], // 注册 Entity
+  imports: [TypeOrmModule.forFeature([Role, Permission, Dept])], // 注册 Entity
   controllers: [RoleController, PermissionController], // 注册 Controller
   providers: [RoleService, PermissionService], // 注册 Service
   exports: [TypeOrmModule, RoleService, PermissionService], // 导出供 UserModule 使用

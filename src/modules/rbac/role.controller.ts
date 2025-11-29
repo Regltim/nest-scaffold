@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { BaseController } from '../../common/base/base.controller';
 import { Role } from './role.entity';
 import { RoleService } from './role.service';
@@ -39,5 +39,13 @@ export class RoleController extends BaseController<Role> {
   @ApiOperation({ summary: '获取角色的权限ID列表' })
   async getRolePermissions(@Param('id') id: number) {
     return this.roleService.getRolePermissions(id);
+  }
+
+  @Post(':id/data-scope')
+  @Roles('admin')
+  @ApiOperation({ summary: '分配数据权限' })
+  @ApiBody({ schema: { example: { dataScope: '2', deptIds: [1, 2] } } })
+  async assignDataScope(@Param('id') id: number, @Body() body: any) {
+    return this.roleService.assignDataScope(id, body.dataScope, body.deptIds);
   }
 }

@@ -94,8 +94,7 @@ export class UserService extends BaseService<User> implements OnModuleInit {
     const user = await this.findOne(userId);
     if (!user) throw new Error('用户不存在');
 
-    const roles = await this.roleRepo.find({ where: { id: In(roleIds) } });
-    user.roles = roles;
+    user.roles = await this.roleRepo.find({ where: { id: In(roleIds) } });
 
     return this.userRepo.save(user);
   }
@@ -105,5 +104,13 @@ export class UserService extends BaseService<User> implements OnModuleInit {
    */
   public repo(): Repository<User> {
     return this.userRepo;
+  }
+
+  // 为数据权限拦截器提供查询 (需要查 Role.depts)
+  async findUserWithRolesAndDepts(userId: number) {
+    return this.userRepo.findOne({
+      where: { id: userId },
+      relations: ['roles', 'roles.depts', 'dept'],
+    });
   }
 }

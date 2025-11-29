@@ -15,11 +15,21 @@ import { DictService } from './dict/dict.service';
 import { TaskService } from './task/task.service';
 import { SyncService } from './sync/sync.service';
 import { OnlineController } from './monitor/online.controller';
+import { DeptService } from './dept/dept.service';
+import { DeptController } from './dept/dept.controller';
+import { Dept } from './dept/dept.entity';
 
 @Module({
   imports: [
     // 确保引入了 Permission 和 Role，因为 SyncService 要操作它们
-    TypeOrmModule.forFeature([DictType, DictData, OperLog, Permission, Role]),
+    TypeOrmModule.forFeature([
+      DictType,
+      DictData,
+      OperLog,
+      Permission,
+      Role,
+      Dept,
+    ]),
     TerminusModule,
     HttpModule,
     DiscoveryModule,
@@ -29,8 +39,9 @@ import { OnlineController } from './monitor/online.controller';
     MonitorController,
     SyncController,
     OnlineController,
+    DeptController,
   ],
-  providers: [DictService, TaskService, SyncService],
+  providers: [DictService, TaskService, SyncService, DeptService],
   exports: [DictService],
 })
 export class SystemModule {}
